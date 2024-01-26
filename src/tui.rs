@@ -1,4 +1,5 @@
 use std::{io, panic};
+use std::rc::Rc;
 use anyhow::Result;
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture,},
@@ -13,12 +14,12 @@ pub struct Tui {
     /// Interface to the terminal
     terminal: XTermTerminal,
     /// Terminal event handler
-    pub events: EventHandler,
+    pub events: Rc<EventHandler>,
 }
 
 impl Tui {
     /// Constructs a new instance of [`Tui`]
-    pub fn new(terminal: XTermTerminal, events: EventHandler) -> Self {
+    pub fn new(terminal: XTermTerminal, events: Rc<EventHandler>) -> Self {
         Self{terminal, events}
     }
 

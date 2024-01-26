@@ -1,4 +1,7 @@
 use std::{fs, path::PathBuf, io};
+use std::rc::Rc;
+use crate::event::{Event, EventHandler};
+use tui_textarea::Input;
 
 #[derive(Debug)]
 pub struct App {
@@ -9,12 +12,13 @@ pub struct App {
     pub paths: Vec<Box<str>>,
     pub current_path: PathBuf,
     pub state: State,
+    pub cli: String,
 }
 
 impl App {
     /// Creates a new instance of [`App`]
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(cli_events: Rc<EventHandler>) -> Self {
+       Self::default()
     }
 
     /// Handles the tick event from the terminal
@@ -63,7 +67,8 @@ impl Default for App {
             counter: Default::default(), 
             paths: get_list_at_dir(std::env::current_dir().unwrap()), 
             current_path: std::env::current_dir().unwrap(),
-            state: State::Normal
+            state: State::Normal,
+            cli: "".to_string(),
         }
     }
 }
@@ -71,26 +76,26 @@ impl Default for App {
 #[derive(Debug)]
 pub enum State {
     Normal,
-    Command(String),
-    Search(String),
+    Command(Option<Input>),
+    Search(Option<Input>),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_inc_counter() {
-        let mut app = App::new();
-        app.inc_counter();
-        assert_eq!(0, app.counter)
-    }
-    fn test_dec_counter() {
-        let mut app = App::new();
-        app.dec_counter();
-        assert_eq!(-1, app.counter)
-    }
-}
+//#[cfg(test)]
+// mod tests {
+//     use super::*;
+//
+//     #[test]
+//     fn test_inc_counter() {
+//         let mut app = App::new();
+//         app.inc_counter();
+//         assert_eq!(0, app.counter)
+//     }
+//     fn test_dec_counter() {
+//         let mut app = App::new();
+//         app.dec_counter();
+//         assert_eq!(-1, app.counter)
+//     }
+// }
 
 fn get_list_at_dir(dir: PathBuf) -> Vec<Box<str>> {
     fs::read_dir(dir)

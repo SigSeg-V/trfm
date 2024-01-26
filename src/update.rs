@@ -7,12 +7,12 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
     match &app.state {
         State::Normal => {
             match key_event.code {
-                KeyCode::Char(':') => app.state = State::Command("".to_string()),
-                KeyCode::Char('/') => app.state = State::Search("".to_string()),
+                KeyCode::Char(':') => app.state = State::Command(Some(key_event.into())),
+                KeyCode::Char('/') => app.state = State::Search(Some(key_event.into())),
                 _ => {}
             }
         },
-        State::Command(cmd) => cmd_mode_keys(app, key_event),
+        State::Command(_) => cmd_mode_keys(app, key_event),
         State::Search(_) => {},
     }
 
@@ -37,21 +37,28 @@ pub fn update(app: &mut App, key_event: KeyEvent) {
     // }
 }
 
+fn srch_mode_keys(app: &mut App, key_event: KeyEvent) {
+    match key_event.code {
+        KeyCode::Esc | KeyCode::Enter => app.state = State::Normal,
+        KeyCode::Char(c) => {
+                app.state = State::Command(Some(key_event.into()));
+        },
+        KeyCode::Backspace => {
+                app.state = State::Command(Some(key_event.into()));
+        }
+        _ => {}
+    }
+}
+
 fn cmd_mode_keys(app: &mut App, key_event: KeyEvent) {
     match key_event.code {
         KeyCode::Esc | KeyCode::Enter => app.state = State::Normal,
         KeyCode::Char(c) => {
-            if let State::Command(cmd) = &mut app.state {
-                cmd.push(c);
-                app.state = State::Command(cmd.to_string());
-            }
+                app.state = State::Command(Some(key_event.into()));
         },
         KeyCode::Backspace => {
-            if let State::Command(cmd) = &mut app.state {
-                cmd.pop();
-                app.state = State::Command(cmd.to_string());
-            }
+                app.state = State::Command(Some(key_event.into()));
         }
-        _ => {}
+        _ => {app.state = State::Command(None);}
     }
 }

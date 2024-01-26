@@ -1,8 +1,11 @@
+use std::ops::Deref;
 use ratatui::{
     prelude::*,
     style::{Color, Style},
     widgets::{Block, BorderType, Borders, Paragraph},
 };
+
+use tui_textarea::{Input, Key, TextArea};
 
 use crate::app::{App, State};
 
@@ -22,7 +25,7 @@ pub fn render(app: &mut App, f: &mut Frame) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Min(3),
-            Constraint::Length(1),
+            Constraint::Length(3),
         ])
         .split(frame);
 
@@ -31,9 +34,12 @@ pub fn render(app: &mut App, f: &mut Frame) {
             "
             Press `Esc`, `C-c` or `q` to quit the app.
 
+            cli content: {}
+
             List of paths:
             {}
-            ", 
+            ",
+            app.cli,
             path_list
         ))
         .block(
@@ -47,15 +53,30 @@ pub fn render(app: &mut App, f: &mut Frame) {
         .alignment(Alignment::Center),
        panels[0]
     );
+    match &app.state{
+        State::Command(inp) | State::Search(inp) if inp.is_some() => {
+            let mut ta = TextArea::default();
+            ta.set_style(Style::default().fg(Color::Green));
+            ta.set_block(Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Thick));
+            ta.input_without_shortcuts(inp.clone().unwrap());
 
-    f.render_widget(
-        Paragraph::new(format!("{}",
-        match &app.state {
-            State::Command(cmd) => format!(":{cmd}"),
-            State::Search(srch) => format!("/{srch}"),
-            _ => "".to_string()
-        }
-        )),
-        panels[1]
-    );
+            let cli = ta.lines();
+
+            f.render_widget(
+                ta.widget(),
+
+                // Paragraph::new(format!("{}",
+                // match &app.state {
+                //     State::Command(cmd) => format!(":{cmd}"),
+                //     State::Search(srch) => format!("/{srch}"),
+                //     _ => "".to_string()
+                // }
+                // )),
+                panels[1]
+            );
+        },
+        _ => {},
+    }
 }
